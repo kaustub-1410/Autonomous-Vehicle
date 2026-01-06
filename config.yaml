@@ -1,0 +1,51 @@
+# Configuration for Autonomous Vehicle Safety System
+
+# System Settings
+system:
+  fps_limit: 30
+  debug_mode: true
+
+# Input Sources
+# valid inputs: 'webcam' (for webcam id), 'video_file_path'
+input:
+  road_video_path: "data/road_sample.mp4"
+  driver_video_source: 0  # 0 for default webcam
+
+# Model Paths
+models:
+  yolo_model: "yolov8n.pt"  # Will be downloaded automatically by Ultralytics if missing
+  dlib_landmarks: "models/shape_predictor_68_face_landmarks.dat"
+
+# Lane Detection Parameters
+lane_detection:
+  canny_threshold1: 50
+  canny_threshold2: 150
+  hough_rho: 2
+  hough_theta: 0.01745 # 1 degree in radians (np.pi/180)
+  hough_threshold: 100
+  hough_min_line_len: 40
+  hough_max_line_gap: 50
+
+# Drowsiness Detection Parameters
+drowsiness:
+  ear_threshold: 0.25      # Eye Aspect Ratio threshold below which eye is considered closed
+  drowsy_time_threshold: 1.5 # Seconds of closed eyes to trigger drowsy warning
+  critical_time_threshold: 2.5 # Seconds of closed eyes to trigger critical warning
+
+# Vehicle Detection & Collision Parameters
+collision:
+  # This is a heuristic: rough width of a car in pixels at a 'safe' distance
+  # This needs calibration based on the video resolution
+  safe_distance_threshold_px: 150 
+  warning_ttc_threshold: 2.5 # Seconds
+
+# Alert System
+alerts:
+  enable_audio: true
+  enable_email: false # Set to true to enable email
+  email_config:
+    sender_email: "your_email@gmail.com"
+    sender_password: "your_app_password"
+    receiver_email: "receiver_email@gmail.com"
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
