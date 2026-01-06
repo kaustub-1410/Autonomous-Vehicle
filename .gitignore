@@ -8,9 +8,9 @@ __pycache__/
 venv/
 env/
 
-# Data & Models (Optional: Comment out if you want to push these, but they are large)
-# models/
-# data/
+# Data & Models (Excluded to prevent push failure of large files)
+models/
+data/
 
 # Database
 *.db
