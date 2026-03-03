@@ -1,5 +1,11 @@
 import cv2
-import mediapipe as mp
+try:
+    from mediapipe import solutions as mp_solutions
+    _MEDIAPIPE_AVAILABLE = True
+except Exception:
+    mp_solutions = None
+    _MEDIAPIPE_AVAILABLE = False
+
 import numpy as np
 import time
 from scipy.spatial import distance as dist
@@ -11,14 +17,20 @@ class DriverMonitor:
         """
         self.config = config or {}
         
-        # Initialize MediaPipe Face Mesh
-        self.mp_face_mesh = mp.solutions.face_mesh
-        self.face_mesh = self.mp_face_mesh.FaceMesh(
-            max_num_faces=1,
-            refine_landmarks=True,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5
-        )
+        # Initialize MediaPipe Face Mesh if available; otherwise run a no-op monitor
+        self.enabled = False
+        if _MEDIAPIPE_AVAILABLE and hasattr(mp_solutions, 'face_mesh'):
+            try:
+                self.mp_face_mesh = mp_solutions.face_mesh
+                self.face_mesh = self.mp_face_mesh.FaceMesh(
+                    max_num_faces=1,
+                    refine_landmarks=True,
+                    min_detection_confidence=0.5,
+                    min_tracking_confidence=0.5
+                )
+                self.enabled = True
+            except Exception:
+                self.enabled = False
 
         # EAR thresholds
         self.ear_threshold = self.config.get('drowsiness', {}).get('ear_threshold', 0.25)
@@ -67,6 +79,9 @@ class DriverMonitor:
         """
         Detects face, computes EAR, and updates driver status.
         """
+        # If mediapipe face mesh not available, return a passthrough with status
+        if not self.enabled:
+            return frame, "Not Monitored", 0.0
         h, w, c = frame.shape
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.face_mesh.process(rgb_frame)
